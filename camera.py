@@ -2,12 +2,18 @@ from cv2 import cv2
 import numpy as np
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
+import uvc
 
 # capture = cv2.VideoCapture('rtsp://tapotest:tapotest@172.16.51.56:554/stream2')
-capture = cv2.VideoCapture(1)
-if not (capture.isOpened()):
-    print("Could not open video device")
-    quit()
+# capture = cv2.VideoCapture(0)
+# if not (capture.isOpened()):
+#     print("Could not open video device")
+#     quit()
+dev_list = uvc.device_list()
+capture = uvc.Capture(dev_list[0]["uid"])
+controls_dict = dict([(c.display_name, c) for c in capture.controls])
+controls_dict['Zoom absolute control'].value = 300
+capture.frame_mode = (1920, 1080, 30)
 
 myColor = [90, 201, 149, 96, 255, 255] #logi green
 # myColor = [95, 0, 15, 179, 39, 111]
@@ -17,7 +23,9 @@ myColorValue =[21, 234, 24]
 myPoints = []
 checkWidth = 100
 
-ret, img = capture.read()
+# ret, img = capture.read()
+frame = capture.get_frame_robust()
+img = frame.bgr
 hi, wi, _ = img .shape
 polygon_left = Polygon([(0, 0), (0, checkWidth), (hi, checkWidth), (hi, 0)])
 polygon_right = Polygon([(0, wi-checkWidth), (0, wi), (hi, wi), (hi, wi-checkWidth)])
@@ -83,7 +91,9 @@ def drawOnCanvas(myPoints, myColorValue):
         cv2.circle(imgResult, (point[0],point[1]), 10, myColorValue ,cv2.FILLED)
 
 while True:
-    ret, img = capture.read()
+    frame = capture.get_frame_robust()
+    img = frame.bgr
+    # ret, img = capture.read()
     imgResult = img.copy()
 
     newPoints = findColor(img, myColor)
@@ -106,5 +116,5 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-capture.release()
+capture = None
 cv2.destroyAllWindows()
