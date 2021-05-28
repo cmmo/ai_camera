@@ -3,6 +3,12 @@ import numpy as np
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 import uvc
+from gpiozero import *
+
+green = LED(5)
+green.on()
+red = LED(12)
+buzzer = Buzzer(21)
 
 # capture = cv2.VideoCapture('rtsp://tapotest:tapotest@172.16.51.56:554/stream2')
 # capture = cv2.VideoCapture(0)
@@ -12,8 +18,8 @@ import uvc
 dev_list = uvc.device_list()
 capture = uvc.Capture(dev_list[0]["uid"])
 controls_dict = dict([(c.display_name, c) for c in capture.controls])
-controls_dict['Zoom absolute control'].value = 300
-capture.frame_mode = (1920, 1080, 30)
+controls_dict['Zoom absolute control'].value = 100
+capture.frame_mode = (640, 480, 30)
 
 myColor = [90, 201, 149, 96, 255, 255] #logi green
 # myColor = [95, 0, 15, 179, 39, 111]
@@ -64,7 +70,13 @@ def getContours(img):
         hi, wi, _ = imgResult.shape
         if len(box) and containPoints(box): 
             cv2.putText(imgResult, "ALARM", (wi//2, hi//2), cv2.FONT_HERSHEY_COMPLEX, 2, (0,0,255), 4)
-        # else:
+            green.off()
+            red.on()
+            buzzer.on()
+        else:
+            buzzer.off()
+            red.off()
+            green.on()
         #     cv2.putText(imgResult, "OK", (wi//2, hi//2), cv2.FONT_HERSHEY_COMPLEX, 2, (0,255,0), 4)
         
     # if OKflag:
@@ -76,13 +88,13 @@ def containPoints(box):
     for a in box:
         point = Point(a[1],a[0])
         if point.within(polygon_left):
-            print(point)
+            # print(point)
             return True
 
     for a in box:
         point = Point(a[1],a[0])
         if point.within(polygon_right):
-            print(point)
+            # print(point)
             return True
     return False
 
@@ -109,9 +121,10 @@ while True:
 
     cv2.rectangle(imgResult,(w-checkWidth,0),(w,h),(0,0,255),2)
 
-    imgResized = cv2.resize(imgResult,(1366,768))
+    imgResized = cv2.resize(imgResult,(1024,768))
     # print('Original:', imgResult.shape)
     # print('Resized:', imgResult.shape)
+    # cv2.imshow('Result',imgResult)
     cv2.imshow('Result',imgResized)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
