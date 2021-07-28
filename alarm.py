@@ -38,20 +38,21 @@ def alarm_start():
     green.off()
     red.on()
 
-    error_frame_count += 1
-
     if pid: #alarm already started
         pass
     else:
-        if error_frame_count > error_frame_count_threshhold:
-            normal_frame_count = 0
-
-            pp3 = Process(target=led01,)
-            pp3.start()
-            pid = pp3.pid
-            print(pid, "alarm_start")
-            print("Error", "error:", error_frame_count, "normal:", normal_frame_count)
-            pp3.join(1)
+        #Judge here
+        error_frame_count += 1				    
+			   
+        print("Error", "error:", error_frame_count, "normal:", normal_frame_count)			
+        if error_frame_count > error_frame_count_threshhold:			   
+            normal_frame_count = 0			
+			
+            pp3 = Process(target=led01,)			
+            pp3.start()			
+            pid = pp3.pid			
+            print(pid, "alarm_start")			
+            pp3.join(1)			
 
 def alarm_stop():
     global pid
@@ -77,17 +78,18 @@ def alarm_stop():
             normal_frame_count = 0
             return
 
+        print("Normal", "error:", error_frame_count, "normal:", normal_frame_count)
         normal_frame_count += 1
+
         if normal_frame_count > normal_frame_count_threshhold:
             error_frame_count = 0
 
             os.kill(pid, 9)
             print(pid, "killed")
-            print("Normal", "error:", error_frame_count, "normal:", normal_frame_count)
             pid = 0
             led.off()
     else:
-        pass
+        error_frame_count -= 1
 
 #
 # --------------------------------------------------------------------

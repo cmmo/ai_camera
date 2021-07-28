@@ -22,7 +22,7 @@ capture.frame_mode = (640, 480, 30)
 alarm.alarm_init()
 
 #myColor = [93, 57, 115, 113, 118, 255] #product
-myColor = [88, 173, 118, 94, 255, 255] #product
+myColor = [88, 173, 118, 94, 255, 255] #logi green
 # myColor = [95, 0, 15, 179, 39, 111]
 # myColor = [86, 64, 0, 121, 137, 113] #black
 # myColor = [32, 92, 127, 73, 255, 255] #grass green
@@ -58,11 +58,21 @@ def getContours(img):
         return
 
     contours,hierarchy = cv2.findContours(img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+    hi, wi, _ = imgResult.shape
+
+
     x, y, w, h = 0,0,0,0
+
+    if alarm.pid != 0:    #alarm already run
+        pass
+    else:
+        alarm.alarm_start()
+        cv2.putText(imgResult, "ALARM Start", (wi//2, hi//2), cv2.FONT_HERSHEY_COMPLEX, 2, (0,0,255), 4)
+
     for cnt in contours:
         area = cv2.contourArea(cnt)
         box = []
-        hi, wi, _ = imgResult.shape
+
         if area>5000:
             rect = cv2.minAreaRect(cnt)
             box = cv2.boxPoints(rect) # 4 corners of the rectangle
@@ -75,26 +85,12 @@ def getContours(img):
             x, y, w, h = cv2.boundingRect(approx)
 
 
-            if (len(box) and containPoints(box)) or area == 0.0: 
-             #print("Enter Error", len(box))
-             #Error
-                if alarm.pid != 0:    #alarm already run
-                    pass
-                else:
-                    alarm.alarm_start()
-                    cv2.putText(imgResult, "ALARM Start", (wi//2, hi//2), cv2.FONT_HERSHEY_COMPLEX, 2, (0,0,255), 4)
-            else:
+            if not containPoints(box): 
                 #Normal
                 #if len(box) != 0:
-                #    print("Enter Normal", len(box)) 
+                #print("Enter Normal") 
                 alarm.alarm_stop()
                 cv2.putText(imgResult, "ALARM Stop", (wi//2, hi//2), cv2.FONT_HERSHEY_COMPLEX, 2, (0,255,0), 4)
-        else:
-           if alarm.pid != 0:    #alarm already run
-                pass
-           else:
-                alarm.alarm_start()
-                cv2.putText(imgResult, "ALARM Start", (wi//2, hi//2), cv2.FONT_HERSHEY_COMPLEX, 2, (0,0,255), 4)
 
 
 def containPoints(box):

@@ -23,12 +23,20 @@ cap.frame_mode = (640, 480, 30)
 
 cv2.namedWindow("HSV")
 cv2.resizeWindow("HSV", 640, 240)
+cv2.createTrackbar("HUE Min", "HSV", 88, 179, empty)
+cv2.createTrackbar("HUE Max", "HSV", 94, 179, empty)
+cv2.createTrackbar("SAT Min", "HSV", 173, 255, empty)
+cv2.createTrackbar("SAT Max", "HSV", 255, 255, empty)
+cv2.createTrackbar("VALUE Min", "HSV", 118, 255, empty)
+cv2.createTrackbar("VALUE Max", "HSV", 255, 255, empty)
+"""
 cv2.createTrackbar("HUE Min", "HSV", 93, 179, empty)
 cv2.createTrackbar("HUE Max", "HSV", 113, 179, empty)
 cv2.createTrackbar("SAT Min", "HSV", 57, 255, empty)
 cv2.createTrackbar("SAT Max", "HSV", 118, 255, empty)
 cv2.createTrackbar("VALUE Min", "HSV", 115, 255, empty)
 cv2.createTrackbar("VALUE Max", "HSV", 255, 255, empty)
+"""
  
  
 while True:
