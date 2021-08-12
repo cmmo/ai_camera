@@ -21,23 +21,28 @@ capture.frame_mode = (640, 480, 30)
 
 alarm.alarm_init()
 
-#myColor = [93, 57, 115, 113, 118, 255] #product
-myColor = [88, 173, 118, 94, 255, 255] #logi green
+myColor = [101, 71, 136, 115, 120, 255] #product
+#myColor = [88, 173, 118, 94, 255, 255] #logi green
 # myColor = [95, 0, 15, 179, 39, 111]
 # myColor = [86, 64, 0, 121, 137, 113] #black
 # myColor = [32, 92, 127, 73, 255, 255] #grass green
 myColorValue =[21, 234, 24]
 myPoints = []
 #checkWidth = 235
-checkWidth_left = 100
-checkWidth_right = 200
+
+#checkWidth_left = 100
+#checkWidth_right = 200
+checkWidth_top = 240
+checkWidth_bottom = 160
 
 # ret, img = capture.read()
 frame = capture.get_frame_robust()
 img = frame.bgr
 hi, wi, _ = img .shape
-polygon_left = Polygon([(0, 0), (0, checkWidth_left ), (hi, checkWidth_left), (hi, 0)])
-polygon_right = Polygon([(0, wi-checkWidth_right), (0, wi), (hi, wi), (hi, wi-checkWidth_right)])
+#polygon_left = Polygon([(0, 0), (0, checkWidth_left ), (hi, checkWidth_left), (hi, 0)])
+#polygon_right = Polygon([(0, wi-checkWidth_right), (0, wi), (hi, wi), (hi, wi-checkWidth_right)])
+polygon_top = Polygon([(0, 0), (0, wi ), (checkWidth_top, wi), (checkWidth_top, 0)])
+polygon_bottom = Polygon([(hi-checkWidth_bottom, 0), (hi-checkWidth_bottom, wi), (hi, wi), (hi, 0)])
 
 def findColor(img, myColor):
     imgHSV = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
@@ -60,15 +65,7 @@ def getContours(img):
     contours,hierarchy = cv2.findContours(img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
     hi, wi, _ = imgResult.shape
 
-
-    x, y, w, h = 0,0,0,0
-
-    if alarm.pid != 0:    #alarm already run
-        pass
-    else:
-        alarm.alarm_start()
-        cv2.putText(imgResult, "ALARM Start", (wi//2, hi//2), cv2.FONT_HERSHEY_COMPLEX, 2, (0,0,255), 4)
-
+    #x, y, w, h = 0,0,0,0
     for cnt in contours:
         area = cv2.contourArea(cnt)
         box = []
@@ -79,30 +76,39 @@ def getContours(img):
             box = np.int0(box)
             # cv2.drawContours(imgResult,[box],0,(0,0,255),2)
 
-            cv2.drawContours(imgResult, cnt, -1, (255, 0, 0), 3)
-            peri = cv2.arcLength(cnt,True)
-            approx = cv2.approxPolyDP(cnt,0.02*peri,True)
-            x, y, w, h = cv2.boundingRect(approx)
+            #cv2.drawContours(imgResult, cnt, -1, (255, 0, 0), 3)
+            #peri = cv2.arcLength(cnt,True)
+            #approx = cv2.approxPolyDP(cnt,0.02*peri,True)
+            #x, y, w, h = cv2.boundingRect(approx)
 
 
             if not containPoints(box): 
                 #Normal
-                #if len(box) != 0:
                 #print("Enter Normal") 
                 alarm.alarm_stop()
-                cv2.putText(imgResult, "ALARM Stop", (wi//2, hi//2), cv2.FONT_HERSHEY_COMPLEX, 2, (0,255,0), 4)
+                return #If normal, return here
+                #cv2.putText(imgResult, "Normal", (wi//2, hi//2), cv2.FONT_HERSHEY_COMPLEX, 1, (0,255,0), 4)
+
+    if alarm.pid != 0:    #alarm already run
+        pass
+    else:
+        alarm.alarm_start()
+        #cv2.putText(imgResult, "Error", (wi//2, hi//2), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 4)
+
 
 
 def containPoints(box):
     for a in box:
         point = Point(a[1],a[0])
-        if point.within(polygon_left):
+        #if point.within(polygon_left):
+        if point.within(polygon_top):
             # print(point)
             return True
 
     for a in box:
         point = Point(a[1],a[0])
-        if point.within(polygon_right):
+        #if point.within(polygon_right):
+        if point.within(polygon_bottom):
             # print(point)
             return True
 
@@ -125,15 +131,17 @@ while True:
     # imgFlip = cv2.flip(imgResult, 1)
     """Screen"""
     h, w, _ = imgResult.shape
-    cv2.rectangle(imgResult,(0,0),(checkWidth_left,h),(0,0,255),2)   #left
+    #cv2.rectangle(imgResult,(0,0),(checkWidth_left,h),(0,0,255),2)   #left
+    #cv2.rectangle(imgResult,(w-checkWidth_right,0),(w,h),(0,0,255),2) #right
 
-    cv2.rectangle(imgResult,(w-checkWidth_right,0),(w,h),(0,0,255),2) #right
+    cv2.rectangle(imgResult,(0,0),(w,checkWidth_top),(0,0,255),2)   #top
+    cv2.rectangle(imgResult,(0,h-checkWidth_bottom),(w,h),(0,0,255),2) #bottom
 
     imgResized = cv2.resize(imgResult,(1024,768))
     # print('Original:', imgResult.shape)
     # print('Resized:', imgResult.shape)
     # cv2.imshow('Result',imgResult)
-    cv2.imshow('Result',imgResized)
+    # cv2.imshow('Result',imgResized)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break

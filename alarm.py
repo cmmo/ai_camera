@@ -14,8 +14,8 @@ red_button = Button(22)
 error_frame_count = 0
 normal_frame_count = 0
 alarm_manual_stopped = False
-error_frame_count_threshhold = 30
-normal_frame_count_threshhold = 30
+error_frame_count_threshhold = 20
+normal_frame_count_threshhold = 20
 
 def led01():
     sys.stderr.write("*** ff01 *** alarm_start ***")
@@ -41,10 +41,9 @@ def alarm_start():
     if pid: #alarm already started
         pass
     else:
-        #Judge here
         error_frame_count += 1				    
 			   
-        print("Error", "error:", error_frame_count, "normal:", normal_frame_count)			
+        #print("Error", "error:", error_frame_count, "normal:", normal_frame_count)			
         if error_frame_count > error_frame_count_threshhold:			   
             normal_frame_count = 0			
 			
@@ -89,7 +88,7 @@ def alarm_stop():
             pid = 0
             led.off()
     else:
-        error_frame_count -= 1
+        error_frame_count = 0
 
 #
 # --------------------------------------------------------------------
